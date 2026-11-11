@@ -1,300 +1,183 @@
-﻿import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+﻿import { useRef } from 'react';
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
+import { ArrowDown, Code2, GraduationCap, Sparkles, Users } from 'lucide-react';
 import pictureImg from '../assets/Portfolio/preethika.jpg';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Magnetic from './ui/Magnetic';
+import { PlayIcon } from './ui/Icons';
+
+const EASE = [0.22, 1, 0.36, 1];
+
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } };
+const rise = {
+  hidden: { opacity: 0, y: 36, filter: 'blur(8px)' },
+  show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.9, ease: EASE } },
+};
+
+/** Floating glass stat chip that bobs gently around the portrait. */
+const FloatChip = ({ icon: Icon, label, value, className, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay: 1 + delay, duration: 0.6, ease: EASE }}
+    className={`absolute z-20 ${className}`}
+  >
+    <motion.div
+      animate={{ y: [0, -10, 0] }}
+      transition={{ duration: 5 + delay * 2, repeat: Infinity, ease: 'easeInOut' }}
+      className="flex items-center gap-3 rounded-2xl border border-line bg-surface/75 px-4 py-3 shadow-lift backdrop-blur-xl"
+    >
+      <span className="grid size-9 place-items-center rounded-xl bg-accent-soft text-accent">
+        <Icon className="size-[18px]" aria-hidden="true" />
+      </span>
+      <span className="leading-tight">
+        <span className="block font-display text-base font-bold">{value}</span>
+        <span className="block text-[11px] text-muted">{label}</span>
+      </span>
+    </motion.div>
+  </motion.div>
+);
 
 const Hero = () => {
-  const sectionRef = useRef(null);
-  const cardRef = useRef(null);
-  const glareRef = useRef(null);
-  const spotlightRef = useRef(null);
-  const cursorDotRef = useRef(null);
-  const cursorRingRef = useRef(null);
-  const contentRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const stageRef = useRef(null);
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    const card = cardRef.current;
-    const content = contentRef.current;
-    if (!section || !card || !content) return;
+  // Pointer-driven 3D tilt (springs keep it smooth, transform-only)
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-10, 10]), { stiffness: 140, damping: 18 });
+  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [10, -10]), { stiffness: 140, damping: 18 });
 
-    // --- GSAP CINEMATIC ENTRANCE ANIMATION ---
-    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-
-    tl.fromTo(
-      section.querySelector('header'),
-      { y: -60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1 }
-    )
-    .fromTo(
-      content.querySelectorAll('.hero-anim-item'),
-      { y: 50, opacity: 0, filter: "blur(10px)" },
-      { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.1, stagger: 0.12 },
-      "-=0.7"
-    )
-    .fromTo(
-      card,
-      { scale: 0.75, opacity: 0, rotationY: 35, rotationX: -15 },
-      { scale: 1, opacity: 1, rotationY: 0, rotationX: 0, duration: 1.4, ease: "back.out(1.2)" },
-      "-=0.9"
-    );
-
-    // --- MOUSE PHYSICS & SPOTLIGHT TRACKING ---
-    gsap.set([cursorDotRef.current, cursorRingRef.current], {
-      scale: 0.5,
-      opacity: 0,
-      transformOrigin: "50% 50%"
-    });
-
-    const xToDot = gsap.quickTo(cursorDotRef.current, "x", { duration: 0.05, ease: "power2.out" });
-    const yToDot = gsap.quickTo(cursorDotRef.current, "y", { duration: 0.05, ease: "power2.out" });
-    
-    const xToRing = gsap.quickTo(cursorRingRef.current, "x", { duration: 0.15, ease: "power3.out" });
-    const yToRing = gsap.quickTo(cursorRingRef.current, "y", { duration: 0.15, ease: "power3.out" });
-
-    const xTilt = gsap.quickTo(card, "rotationY", { duration: 0.4, ease: "power3.out" });
-    const yTilt = gsap.quickTo(card, "rotationX", { duration: 0.4, ease: "power3.out" });
-    const glareX = gsap.quickTo(glareRef.current, "x", { duration: 0.3, ease: "power2.out" });
-    const glareY = gsap.quickTo(glareRef.current, "y", { duration: 0.3, ease: "power2.out" });
-
-    const handleMouseMove = (e) => {
-      const rect = section.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const dotSize = 12;
-      const ringSize = 48;
-
-      // Update Spotlight position instantly via inline style
-      if (spotlightRef.current) {
-        spotlightRef.current.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`;
-      }
-
-      // Update Custom Cursor coordinates
-      xToDot(x - dotSize / 2);
-      yToDot(y - dotSize / 2);
-      xToRing(x - ringSize / 2);
-      yToRing(y - ringSize / 2);
-
-      // Card 3D Perspective Calculations
-      const cardRect = card.getBoundingClientRect();
-      const cardCenterX = cardRect.left + cardRect.width / 2 - rect.left;
-      const cardCenterY = cardRect.top + cardRect.height / 2 - rect.top;
-
-      const rotateX = -((y - cardCenterY) / (cardRect.height / 2)) * 16;
-      const rotateY = ((x - cardCenterX) / (cardRect.width / 2)) * 16;
-
-      xTilt(rotateY);
-      yTilt(rotateX);
-
-      // Holographic Glare mapping
-      glareX((x - cardRect.left) - cardRect.width / 2);
-      glareY((y - cardRect.top) - cardRect.height / 2);
-    };
-
-    const handleMouseEnter = () => {
-      gsap.to([cursorDotRef.current, cursorRingRef.current], {
-        opacity: 1,
-        scale: 1,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-      if (spotlightRef.current) gsap.to(spotlightRef.current, { opacity: 1, duration: 0.3 });
-    };
-
-    const handleMouseLeave = () => {
-      gsap.to([cursorDotRef.current, cursorRingRef.current], {
-        opacity: 0,
-        scale: 0.5,
-        duration: 0.3,
-        ease: "power2.inOut"
-      });
-      if (spotlightRef.current) gsap.to(spotlightRef.current, { opacity: 0, duration: 0.3 });
-      xTilt(0);
-      yTilt(0);
-    };
-
-    section.addEventListener("mousemove", handleMouseMove);
-    section.addEventListener("mouseenter", handleMouseEnter);
-    section.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      section.removeEventListener("mousemove", handleMouseMove);
-      section.removeEventListener("mouseenter", handleMouseEnter);
-      section.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, []);
+  const onMove = (e) => {
+    if (reduceMotion || e.pointerType !== 'mouse' || !stageRef.current) return;
+    const rect = stageRef.current.getBoundingClientRect();
+    px.set((e.clientX - rect.left) / rect.width - 0.5);
+    py.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+  const onLeave = () => {
+    px.set(0);
+    py.set(0);
+  };
 
   return (
     <section
-      ref={sectionRef}
-      className="relative w-full h-screen bg-[#050505] overflow-hidden flex flex-col justify-between select-none cursor-none"
+      id="home"
+      aria-labelledby="hero-title"
+      className="relative flex min-h-screen w-full items-center px-6 pb-20 pt-28 md:px-12"
     >
-      {/* 1. Cinematic Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#f7f8fb] via-white/90 to-[#f7f8fb] z-0"></div>
-
-      {/* 2. Direct Mouse Tracking Spotlight Beam (Glows wherever you move) */}
-      <div
-        ref={spotlightRef}
-        className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none z-10 opacity-0 blur-[90px] transition-opacity duration-300"
-        style={{
-          background: 'radial-gradient(circle, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.1) 40%, transparent 70%)'
-        }}
-      ></div>
-
-      {/* 3. Main Content Layer */}
-      <div ref={contentRef} className="relative z-20 w-full max-w-7xl mx-auto px-6 md:px-12 h-full flex flex-col justify-between pt-24 pb-12">
-        
-        {/* Top Netflix Cinematic Badge */}
-        <div className="hero-anim-item flex items-center justify-between w-full">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded bg-black/80 backdrop-blur-2xl border border-red-600/40 text-xs font-mono uppercase tracking-widest text-white shadow-2xl">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-            <span className="text-red-500 font-bold tracking-wider">NETFLIX DEVELOPER SERIES</span>
-            <span className="text-white/40">|</span>
-            <span className="text-white/80">SEASONS 2022 - 2026</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-xs font-mono text-white/50 tracking-wider">
-            <span className="px-2 py-0.5 border border-white/20 rounded bg-black/40">FULL-STACK 4K</span>
-            <span className="px-2 py-0.5 border border-white/20 rounded bg-black/40">CS @ VIT VELLORE</span>
-          </div>
-        </div>
-
-        {/* Main Center Cinematic Stage Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 my-auto">
-          
-          {/* Left Side: Developer Story & Description */}
-          <div className="lg:col-span-5 flex flex-col items-start space-y-5 text-left">
-            
-            <div className="hero-anim-item flex items-center gap-3">
-              <span className="px-2.5 py-0.5 bg-red-600 text-white font-black text-xs rounded tracking-widest shadow-[0_0_20px_rgba(79,70,229,0.8)]">GPA 8.96</span>
-              <span className="text-white/80 text-xs font-mono tracking-widest uppercase">Full-Stack Developer & Problem Solver</span>
-            </div>
-
-            <h1 className="hero-anim-item font-display font-bold text-5xl md:text-7xl tracking-tight text-white leading-[0.95] drop-shadow-[0_15px_30px_rgba(0,0,0,0.9)]">
-              PREETHIKA <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-600 to-red-700 drop-shadow-[0_0_35px_rgba(79,70,229,0.5)]">
-                SOFTWARE ENGINEER
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-14 lg:grid-cols-[1.1fr_0.9fr] 3xl:max-w-[1760px]">
+        {/* Left: story */}
+        <motion.div variants={stagger} initial="hidden" animate="show" className="flex flex-col items-start gap-7">
+          <motion.p variants={rise}>
+            <Badge variant="accent" className="gap-2.5 px-4 py-1.5 uppercase tracking-widest shadow-card">
+              <span aria-hidden="true" className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent-solid opacity-70" />
+                <span className="relative inline-flex size-2 rounded-full bg-accent-solid" />
               </span>
-            </h1>
+              Netflix Developer Series
+              <span aria-hidden="true" className="text-subtle">|</span>
+              <span className="text-muted">Seasons 2022 - 2026</span>
+            </Badge>
+          </motion.p>
 
-            <div className="hero-anim-item flex items-center gap-3 text-xs font-mono text-red-400 font-bold">
-              <span className="px-2 py-0.5 bg-red-500/10 border border-red-500/30 rounded text-red-500">100+ Users</span>
-              <span className="text-white/40">•</span>
-              <span>React • Node.js • MongoDB</span>
-              <span className="text-white/40">•</span>
-              <span className="text-white/70">MySQL & Docker</span>
+          <motion.p variants={rise} className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
+            Product Development at Perficient
+          </motion.p>
+
+          <motion.h1
+            id="hero-title"
+            variants={rise}
+            className="font-display text-[clamp(3rem,8vw,6.5rem)] font-bold leading-[0.95] tracking-tight"
+          >
+            <span className="block">PREETHIKA</span>
+            <span className="mt-3 block max-w-[14ch] bg-gradient-to-r from-grad-from to-orchid-text bg-clip-text pb-2 text-[clamp(2.1rem,5vw,4rem)] leading-[1.02] text-transparent sm:max-w-none">
+              ASSOCIATE TECHNICAL CONSULTANT
+            </span>
+          </motion.h1>
+
+          <motion.p variants={rise} className="max-w-xl text-lg font-light leading-relaxed text-muted">
+            Associate Technical Consultant at Perficient, building scalable product platforms and REST APIs, and transforming
+            complex data into actionable insights. B.Tech Computer Science, VIT Vellore.
+          </motion.p>
+
+          <motion.ul variants={rise} className="flex flex-wrap items-center gap-2" aria-label="Core stack">
+            {['React', 'Spring Boot', 'PostgreSQL', 'MySQL', 'Docker'].map((tech) => (
+              <li key={tech}>
+                <Badge size="sm">{tech}</Badge>
+              </li>
+            ))}
+          </motion.ul>
+
+          <motion.div variants={rise} className="flex flex-wrap items-center gap-4 pt-2">
+            <Magnetic>
+              <Button asChild size="lg">
+                <a href="#projects">
+                  <PlayIcon />
+                  View Projects
+                </a>
+              </Button>
+            </Magnetic>
+            <Magnetic>
+              <Button asChild size="lg" variant="outline">
+                <a href="#contact">Contact Me</a>
+              </Button>
+            </Magnetic>
+          </motion.div>
+        </motion.div>
+
+        {/* Right: portrait stage */}
+        <div
+          ref={stageRef}
+          onPointerMove={onMove}
+          onPointerLeave={onLeave}
+          className="relative mx-auto w-full max-w-[420px] [perspective:1200px]"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: EASE, delay: 0.3 }}
+            style={reduceMotion ? undefined : { rotateX, rotateY, transformStyle: 'preserve-3d' }}
+            className="relative"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-accent-solid/50 via-orchid/40 to-orchid/30 blur-3xl"
+            />
+            <div className="relative overflow-hidden rounded-[2rem] border border-line bg-surface/70 p-3 shadow-lift backdrop-blur-xl">
+              <Badge variant="solid" size="xs" className="absolute left-7 top-7 z-10 font-bold">
+                <Sparkles aria-hidden="true" /> FEATURED DEV
+              </Badge>
+              <img
+                src={pictureImg}
+                alt="Portrait of Preethika Bommu"
+                width="640"
+                height="780"
+                fetchPriority="high"
+                className="aspect-[4/5] w-full rounded-3xl object-cover"
+              />
             </div>
+          </motion.div>
 
-            <p className="hero-anim-item text-sm md:text-base text-white/80 font-light leading-relaxed max-w-md drop-shadow">
-              B.Tech Computer Science student at VIT Vellore, architecting scalable full-stack platforms, designing REST APIs, and transforming complex data into actionable insights.
-            </p>
-
-            {/* Action Button Set */}
-            <div className="hero-anim-item flex items-center gap-4 pt-2">
-              <a
-                href="#projects"
-                className="px-8 py-3.5 bg-red-600 text-white font-bold text-xs uppercase tracking-widest rounded hover:bg-red-700 transition-all duration-300 shadow-[0_10px_35px_rgba(79,70,229,0.35)] flex items-center gap-2 hover:scale-105 active:scale-95"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                View Projects
-              </a>
-              <a
-                href="#contact"
-                className="px-8 py-3.5 bg-neutral-100/80 text-white border border-white/20 font-bold text-xs uppercase tracking-widest rounded hover:bg-neutral-200 transition-all duration-300 shadow-xl backdrop-blur-md flex items-center gap-2 hover:scale-105 active:scale-95"
-              >
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                Contact Me
-              </a>
-            </div>
-          </div>
-
-          {/* Center: Interactive 3D Holographic Tilt Developer Poster Frame */}
-          <div className="lg:col-span-4 flex justify-center perspective-[1200px]">
-            <div 
-              ref={cardRef}
-              className="relative group transform-gpu transition-transform duration-100 ease-out will-change-transform"
-            >
-              {/* Cinematic Red Neon Back Glow */}
-              <div className="absolute -inset-3 bg-gradient-to-r from-red-600/70 via-rose-600/40 to-purple-600/20 rounded-3xl blur-3xl opacity-90 group-hover:opacity-100 animate-pulse duration-1000"></div>
-              
-              {/* Poster Card with Glossy Sheen */}
-              <div className="relative w-[280px] md:w-[320px] p-3.5 bg-[#141414]/90 backdrop-blur-2xl rounded-2xl border border-red-600/40 shadow-[0_40px_80px_rgba(0,0,0,0.95)] overflow-hidden">
-                
-                {/* Dynamic Specular Glare Layer */}
-                <div 
-                  ref={glareRef}
-                  className="absolute inset-[-50%] w-[200%] h-[200%] bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none transform-gpu z-40"
-                ></div>
-
-                {/* Netflix Series Tag */}
-                <div className="absolute top-6 left-6 z-30 px-3 py-1 bg-red-600 text-white font-mono text-[10px] font-bold tracking-widest rounded shadow-xl">
-                  FEATURED DEV
-                </div>
-
-                <img
-                  src={pictureImg}
-                  alt="Developer Portrait"
-                  className="w-full h-[330px] md:h-[390px] object-cover rounded-xl filter contrast-125 brightness-105 group-hover:scale-[1.02] transition-transform duration-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Technical Specs & Stack */}
-          <div className="hero-anim-item lg:col-span-3 flex flex-col items-start lg:items-end space-y-4 text-left lg:text-right">
-            <div className="p-5 bg-black/80 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl max-w-xs">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-red-500 font-bold mb-2">Core Stack & Recognition</h3>
-              <p className="text-xs text-white/80 leading-relaxed font-light">
-                B.Tech CS @ VIT Vellore (GPA 8.96), Certified Full-Stack Developer & SQL Bootcamp Graduate.
-              </p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Bottom Cinematic Ticker */}
-        <div className="hero-anim-item flex items-center justify-between text-xs font-mono text-white/50 tracking-widest uppercase">
-          <span>ENGINEERED FOR SCALABILITY</span>
-          <span>[ PORTFOLIO RELEASE v2.6 ]</span>
+          <FloatChip icon={GraduationCap} value="GPA 8.96" label="B.Tech CS · VIT Vellore" className="-left-3 top-[14%] sm:-left-10" />
+          <FloatChip icon={Users} value="100+ Users" label="Test users served" className="-right-3 top-[48%] sm:-right-10" delay={0.4} />
+          <FloatChip icon={Code2} value="Full-Stack" label="React · Spring Boot · PostgreSQL" className="-bottom-4 left-[10%] sm:left-[4%]" delay={0.8} />
         </div>
       </div>
 
-      {/* 4. Ultra Pro Max Custom Precision Cursor Suite */}
-      <div
-        ref={cursorDotRef}
-        className="absolute top-0 left-0 z-50 pointer-events-none w-3 h-3 bg-red-600 rounded-full shadow-[0_0_15px_#4F46E5]"
-      ></div>
-
-      <div
-        ref={cursorRingRef}
-        className="absolute top-0 left-0 z-50 pointer-events-none w-12 h-12 border border-red-600/60 rounded-full flex items-center justify-center backdrop-blur-[1px]"
-      ></div>
-
-      {/* --- NETFLIX-THEMED DEVELOPER NAVBAR --- */}
-      <header className="absolute top-0 left-0 z-50 w-full max-w-7xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between pointer-events-auto">
-        <div className="text-2xl font-black text-red-600 tracking-tighter flex items-center gap-2 drop-shadow-[0_2px_15px_rgba(79,70,229,0.9)]">
-          PREETHIKA<span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-        </div>
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-white/80">
-          <a href="#home" className="hover:text-red-500 transition-colors">Home</a>
-          <a href="#about" className="hover:text-red-500 transition-colors">About</a>
-          <a href="#expertise" className="hover:text-red-500 transition-colors">Expertise</a>
-          <a href="#skills" className="hover:text-red-500 transition-colors">Skills</a>
-          <a href="#projects" className="hover:text-red-500 transition-colors">Projects</a>
-          <a href="#contact" className="hover:text-red-500 transition-colors">Contact</a>
-        </nav>
-        <a
-          href="#contact"
-          className="px-5 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.6)] hover:scale-105 active:scale-95"
-        >
-          Hire Me
-        </a>
-      </header>
+      <motion.a
+        href="#about"
+        aria-label="Scroll to About section"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.8 }}
+        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-subtle transition-colors hover:text-accent md:flex"
+      >
+        Scroll
+        <motion.span animate={{ y: [0, 6, 0] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}>
+          <ArrowDown className="size-4" aria-hidden="true" />
+        </motion.span>
+      </motion.a>
     </section>
   );
 };

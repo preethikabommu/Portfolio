@@ -1,238 +1,166 @@
-﻿import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+﻿import { Briefcase } from 'lucide-react';
+import { experience, focusAreas, languages, stats, techStack } from '../data/profile';
+import Card from './ui/PinCard';
+import { Section, SectionHeader, Tag } from './ui/Section';
+import { MASONRY_3 } from './ui/masonry';
 
-gsap.registerPlugin(ScrollTrigger);
+const CardLabel = ({ children }) => (
+  <h3 className="mb-4 font-mono text-xs font-bold uppercase tracking-widest text-accent">{children}</h3>
+);
 
-const About = () => {
-  const sectionRef = useRef(null);
-  const cardRefs = useRef([]);
+const About = () => (
+  <Section id="about" labelledBy="about-title" className="overflow-hidden">
+    <SectionHeader
+      id="about-title"
+      eyebrow="EPISODE 01"
+      label="ABOUT THE ENGINEER"
+      title="EPISODE SYNOPSIS"
+      accent="ORIGIN & VISION."
+    />
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    // --- Cinematic Stagger Entrance on Scroll ---
-    gsap.fromTo(
-      cardRefs.current,
-      { y: 80, opacity: 0, scale: 0.95 },
-      {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        duration: 1,
-        stagger: 0.2,
-        ease: "power4.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "top 70%",
-          toggleActions: "play none none reverse"
-        }
-      }
-    );
-
-    // --- Interactive Magnetic Mouse Spotlight per Bento Card ---
-    const cards = cardRefs.current;
-    const handleMouseMove = (e, card) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    };
-
-    cards.forEach((card) => {
-      if (!card) return;
-      const listener = (e) => handleMouseMove(e, card);
-      card.addEventListener('mousemove', listener);
-      return () => card.removeEventListener('mousemove', listener);
-    });
-
-  }, []);
-
-  const addToRefs = (el) => {
-    if (el && !cardRefs.current.includes(el)) {
-      cardRefs.current.push(el);
-    }
-  };
-
-  return (
-    <section
-      id="about"
-      ref={sectionRef}
-      className="relative w-full min-h-screen bg-[#050505] text-white py-32 px-6 md:px-12 flex flex-col justify-center select-none overflow-hidden"
-    >
-      {/* Background Cinematic Red Ambient Glows */}
-      <div className="absolute top-1/4 left-10 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[160px] pointer-events-none"></div>
-      <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-red-900/10 rounded-full blur-[160px] pointer-events-none"></div>
-
-      <div className="relative z-10 max-w-7xl mx-auto w-full space-y-16">
-        
-        {/* Section Header */}
-        <div className="flex flex-col items-start space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded bg-black/80 backdrop-blur-2xl border border-red-600/40 text-xs font-mono uppercase tracking-widest text-white shadow-2xl">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
-            <span className="text-red-500 font-bold">EPISODE 01</span>
-            <span className="text-white/40">|</span>
-            <span>ABOUT THE ENGINEER</span>
+    <div className={MASONRY_3}>
+      <Card className="p-8 md:p-10">
+        <CardLabel>Professional Experience</CardLabel>
+        <div className="mb-5 flex items-start gap-4">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent-solid text-white shadow-card">
+            <Briefcase className="size-5" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="font-display text-2xl font-bold leading-tight tracking-tight">{experience.company}</p>
+            <p className="mt-1 text-sm font-medium text-muted">
+              {experience.role} <span aria-hidden="true">·</span> {experience.team}
+            </p>
           </div>
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white">
-            EPISODE SYNOPSIS <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-600 to-red-700 drop-shadow-[0_0_30px_rgba(79,70,229,0.4)]">
-              ORIGIN & VISION.
+        </div>
+        <p className="font-light leading-relaxed text-muted">{experience.summary}</p>
+        <ul className="mt-5 space-y-3 text-sm font-light leading-relaxed text-muted">
+          {experience.highlights.map((item) => (
+            <li key={item} className="flex items-start gap-3">
+              <span aria-hidden="true" className="font-bold text-accent">&#8250;</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-6 flex flex-wrap gap-2" aria-label="Technologies used at work">
+          {experience.stack.map((tech) => (
+            <li key={tech}>
+              <Tag>{tech}</Tag>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card delay={0.04} className="p-8 md:p-10">
+        <CardLabel>Cast &amp; Background</CardLabel>
+        <div className="space-y-4">
+          <p className="text-lg font-medium leading-relaxed md:text-xl">
+            I am <strong className="font-bold">Preethika Bommu</strong>, an Associate Technical Consultant at Perficient working in product development, with a B.Tech in Computer Science from Vellore Institute of Technology (GPA 8.96).
+          </p>
+          <p className="font-light leading-relaxed text-muted">
+            My technical narrative bridges rigorous algorithmic problem-solving with full-stack software architecture —
+            translating complex backend logic into seamless, high-performance user experiences. I design clean REST
+            APIs, model data workflows, and ship user-centric features end-to-end, from database design to polished
+            interfaces.
+          </p>
+          <p className="font-light leading-relaxed text-muted">
+            On the data side, I build predictive systems from real-world datasets, such as airfare pricing and
+            credit-card fraud detection, focusing as much on accuracy metrics as on the story the numbers tell.
+            I&apos;m equally comfortable tuning a Django-free Python pipeline or containerizing a full-stack app for
+            cloud deployment.
+          </p>
+          <p className="font-light leading-relaxed text-muted">
+            Beyond engineering, I lead campus initiatives as Co-Secretary of VIT&apos;s Vriksh club and I&apos;m
+            steadily deepening my focus on AI-driven products that help people make better decisions — the thread that
+            runs through every project I take on.
+          </p>
+        </div>
+        <ul className="mt-6 flex flex-wrap gap-2">
+          {focusAreas.map((area) => (
+            <li key={area}>
+              <Tag>{area}</Tag>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card delay={0.08} className="p-8 md:p-10">
+        <CardLabel>By the Numbers</CardLabel>
+        <dl className="grid grid-cols-3 gap-4 text-center">
+          {stats.map(({ value, label }) => (
+            <div key={label} className="rounded-2xl bg-surface-2 px-2 py-4">
+              <dd className="font-display text-3xl font-bold text-accent">{value}</dd>
+              <dt className="mt-1 text-[11px] leading-tight text-muted">{label}</dt>
+            </div>
+          ))}
+        </dl>
+      </Card>
+
+      <Card delay={0.12} className="p-8 md:p-10">
+        <CardLabel>Milestones &amp; Accolades</CardLabel>
+        <ul className="space-y-4 text-sm font-light leading-relaxed text-muted">
+          <li className="flex items-start gap-3">
+            <span aria-hidden="true" className="font-bold text-accent">&#8250;</span>
+            <span>
+              <strong className="font-semibold text-fg">Associate Technical Consultant</strong> at Perficient, in product development.
             </span>
-          </h2>
-        </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <span aria-hidden="true" className="font-bold text-accent">&#8250;</span>
+            <span>
+              <strong className="font-semibold text-fg">B.Tech Computer Science</strong> at VIT Vellore with{' '}
+              <strong className="font-semibold text-fg">GPA 8.96/10</strong>.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span aria-hidden="true" className="font-bold text-accent">&#8250;</span>
+            <span>
+              <strong className="font-semibold text-fg">Co-Secretary of Vriksh Club</strong>, leading 15+ campus events
+              with 100+ participants each.
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span aria-hidden="true" className="font-bold text-accent">&#8250;</span>
+            <span>
+              Certified <strong className="font-semibold text-fg">Full Stack Web Developer</strong> &amp;{' '}
+              <strong className="font-semibold text-fg">SQL Bootcamp</strong> graduate.
+            </span>
+          </li>
+        </ul>
+        <p className="mt-6 font-mono text-xs text-subtle">{'// SEASON_01 HIGHLIGHTS'}</p>
+      </Card>
 
-        {/* Bento Grid Layout with Interactive Mouse Light Tracking */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          
-          {/* Card 1: Bio & Academic Core (Span 7) */}
-          <div
-            ref={addToRefs}
-            className="md:col-span-7 p-8 md:p-12 bg-[#141414]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col justify-between relative group hover:border-red-600/60 transition-all duration-500 overflow-hidden"
-          >
-            {/* Real-time mouse hover spotlight highlight */}
-            <div 
-              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(79,70,229,0.15), transparent 70%)'
-              }}
-            ></div>
+      <Card delay={0.04} className="p-8 md:p-10">
+        <CardLabel>Production Tech Stack</CardLabel>
+        <p className="mb-5 text-base font-semibold">Equipped with industry-grade instruments for robust scaling.</p>
+        <ul className="flex flex-wrap gap-2">
+          {techStack.map((tech) => (
+            <li key={tech}>
+              <Tag className="uppercase tracking-wider transition-transform hover:scale-105 hover:border-accent-line hover:text-accent">
+                {tech}
+              </Tag>
+            </li>
+          ))}
+        </ul>
+      </Card>
 
-            <div className="absolute top-0 right-0 p-8 text-white/5 font-mono text-7xl font-black pointer-events-none">
-              01
-            </div>
-            
-            <div className="space-y-5 relative z-10">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-red-500 font-bold">Cast & Background</h3>
-              <p className="text-lg md:text-xl font-medium text-white/90 leading-relaxed">
-                I am <span className="text-white font-bold drop-shadow">Preethika Bommu</span>, a B.Tech Computer Science student at Vellore Institute of Technology with a GPA of 8.96.
-              </p>
-              <p className="text-sm md:text-base text-white/60 font-light leading-relaxed">
-                My technical narrative bridges rigorous algorithmic problem-solving with full-stack software architecture — translating complex backend logic into seamless, high-performance user experiences. I design clean REST APIs, model data workflows, and ship user-centric features end-to-end, from database design to polished interfaces.
-              </p>
-              <p className="text-sm md:text-base text-white/60 font-light leading-relaxed">
-                On the data side, I build predictive systems from real-world datasets, such as airfare pricing and credit-card fraud detection, focusing as much on accuracy metrics as on the story the numbers tell. I'm equally comfortable tuning a Django-free Python pipeline or containerizing a full-stack app for cloud deployment.
-              </p>
-              <p className="text-sm md:text-base text-white/60 font-light leading-relaxed">
-                Beyond engineering, I lead campus initiatives as Co-Secretary of VIT's Vriksh club and I'm steadily deepening my focus on AI-driven products that help people make better decisions — the thread that runs through every project I take on.
-              </p>
-            </div>
-            
-            <div className="pt-8 flex flex-wrap gap-2 relative z-10">
-              <span className="px-3.5 py-1.5 rounded bg-white/5 border border-white/10 text-xs font-mono text-white/80">Java</span>
-              <span className="px-3.5 py-1.5 rounded bg-white/5 border border-white/10 text-xs font-mono text-white/80">Full-Stack Development</span>
-              <span className="px-3.5 py-1.5 rounded bg-white/5 border border-white/10 text-xs font-mono text-white/80">Data & Analytics</span>
-            </div>
-          </div>
-
-          {/* Card 2: Fellowships & Achievements (Span 5) */}
-          <div
-            ref={addToRefs}
-            className="md:col-span-5 p-8 md:p-12 bg-[#141414]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col justify-between relative group hover:border-red-600/60 transition-all duration-500 overflow-hidden"
-          >
-            {/* Real-time mouse hover spotlight highlight */}
-            <div 
-              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(79,70,229,0.15), transparent 70%)'
-              }}
-            ></div>
-
-            <div className="absolute top-0 right-0 p-8 text-white/5 font-mono text-7xl font-black pointer-events-none">
-              02
-            </div>
-            
-            <div className="space-y-5 relative z-10">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-red-500 font-bold">Milestones & Accolades</h3>
-              <ul className="space-y-3.5 text-sm text-white/80 font-light">
-                <li className="flex items-start gap-2.5">
-                  <span className="text-red-500 font-bold">&#8250;</span>
-                  <span><strong className="text-white">B.Tech Computer Science</strong> at VIT Vellore with <strong className="text-white">GPA 8.96/10</strong>.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-red-500 font-bold">&#8250;</span>
-                  <span><strong className="text-white">Co-Secretary of Vriksh Club</strong>, leading 15+ campus events with 100+ participants each.</span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-red-500 font-bold">&#8250;</span>
-                  <span>Certified <strong className="text-white">Full Stack Web Developer</strong> & <strong className="text-white">SQL Bootcamp</strong> graduate.</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="pt-6 font-mono text-xs text-white/40 relative z-10">
-              // SEASON_01 HIGHLIGHTS
-            </div>
-          </div>
-
-          {/* Card 3: Technical Ecosystem (Span 12) */}
-          <div
-            ref={addToRefs}
-            className="md:col-span-12 p-8 md:p-12 bg-[#141414]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 hover:border-red-600/60 transition-all duration-500 overflow-hidden relative group"
-          >
-            {/* Real-time mouse hover spotlight highlight */}
-            <div 
-              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), rgba(79,70,229,0.15), transparent 70%)'
-              }}
-            ></div>
-
-            <div className="space-y-2 text-left relative z-10">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-red-500 font-bold">Production Tech Stack</h3>
-              <p className="text-base md:text-lg font-semibold text-white">Equipped with industry-grade instruments for robust scaling.</p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3 relative z-10">
-              {['Java', 'Python', 'SQL', 'React', 'Node.js', 'Express', 'MySQL', 'MongoDB', 'Docker', 'JavaScript'].map((tech, idx) => (
-                <span
-                  key={idx}
-                  className="px-4 py-2 rounded bg-white/[0.04] border border-white/10 text-xs font-mono uppercase tracking-wider text-white shadow-inner hover:bg-red-600/20 hover:border-red-600/40 hover:scale-105 transition-all"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 4: Languages Known (Span 12) */}
-          <div
-            ref={addToRefs}
-            className="md:col-span-12 p-8 md:p-12 bg-[#141414]/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 hover:border-red-600/60 transition-all duration-500 overflow-hidden relative group"
-          >
-            {/* Real-time mouse hover spotlight highlight */}
-            <div 
-              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                background: 'radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), rgba(79,70,229,0.12), transparent 70%)'
-              }}
-            ></div>
-
-            <div className="space-y-2 text-left relative z-10">
-              <h3 className="text-xs font-mono uppercase tracking-widest text-red-500 font-bold">Languages Known</h3>
-              <p className="text-base md:text-lg font-semibold text-white">Communicating across contexts with clarity.</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 relative z-10">
-              <span className="px-4 py-2 rounded bg-white/[0.04] border border-white/10 text-xs font-mono uppercase tracking-wider text-white shadow-inner hover:bg-red-600/20 hover:border-red-600/40 hover:scale-105 transition-all">
-                English <span className="text-white/50">· Fluent</span>
-              </span>
-              <span className="px-4 py-2 rounded bg-white/[0.04] border border-white/10 text-xs font-mono uppercase tracking-wider text-white shadow-inner hover:bg-red-600/20 hover:border-red-600/40 hover:scale-105 transition-all">
-                Telugu <span className="text-white/50">· Native</span>
-              </span>
-              <span className="px-4 py-2 rounded bg-white/[0.04] border border-white/10 text-xs font-mono uppercase tracking-wider text-white shadow-inner hover:bg-red-600/20 hover:border-red-600/40 hover:scale-105 transition-all">
-                Hindi <span className="text-white/50">· Conversational</span>
-              </span>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-  );
-};
+      <Card delay={0.08} className="p-8 md:p-10">
+        <CardLabel>Languages Known</CardLabel>
+        <p className="mb-5 text-base font-semibold">Communicating across contexts with clarity.</p>
+        <ul className="flex flex-wrap gap-2">
+          {languages.map(({ name, level }) => (
+            <li key={name}>
+              <Tag className="uppercase tracking-wider transition-transform hover:scale-105 hover:border-accent-line hover:text-accent">
+                {name}
+                <span aria-hidden="true" className="mx-1.5">·</span>
+                <span className="sr-only">, </span>
+                <span className="text-subtle">{level}</span>
+              </Tag>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
+  </Section>
+);
 
 export default About;

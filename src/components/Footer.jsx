@@ -1,73 +1,67 @@
-﻿const Footer = () => {
-  return (
-    <footer className="bg-[#050505] text-white py-16 px-6 md:px-12 border-t border-white/10 select-none relative z-10">
-      <div className="max-w-7xl mx-auto flex flex-col space-y-12">
-        
-        {/* Top Section: Brand & Quick Links */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 pb-12 border-b border-white/10">
-          <div className="space-y-2">
-            <div className="text-2xl font-black text-red-600 tracking-tighter flex items-center gap-2 drop-shadow-[0_2px_15px_rgba(79,70,229,0.9)]">
-              PREETHIKA<span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-            </div>
-            <p className="text-xs font-mono text-white/50 tracking-widest uppercase">
-              // NETFLIX DEVELOPER SERIES &bull; SEASON 2026
-            </p>
-          </div>
+﻿import { NAV_LINKS } from '../data/navLinks';
+import { contactChannels } from '../data/profile';
 
-          {/* Quick Navigation Links */}
-          <nav className="flex flex-wrap gap-6 md:gap-8 text-xs font-mono uppercase tracking-widest text-white/70">
-            <a href="#home" className="hover:text-red-500 transition-colors">Home</a>
-            <a href="#about" className="hover:text-red-500 transition-colors">About</a>
-            <a href="#expertise" className="hover:text-red-500 transition-colors">Expertise</a>
-            <a href="#skills" className="hover:text-red-500 transition-colors">Skills</a>
-            <a href="#projects" className="hover:text-red-500 transition-colors">Projects</a>
-            <a href="#contact" className="hover:text-red-500 transition-colors">Contact</a>
-          </nav>
+const social = contactChannels.filter((c) => c.external);
+const email = contactChannels.find((c) => c.icon === 'mail');
+const phone = contactChannels.find((c) => c.icon === 'phone');
+
+const linkClass = 'transition-colors hover:text-accent';
+
+const Footer = () => (
+  <footer className="relative z-10 border-t border-line bg-surface px-6 py-14 md:px-12">
+    <div className="mx-auto flex max-w-7xl flex-col gap-10 3xl:max-w-[1760px]">
+      <div className="flex flex-col items-start justify-between gap-8 border-b border-line pb-10 md:flex-row md:items-center">
+        <div className="space-y-2">
+          <p className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight">
+            PREETHIKA
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent-solid" />
+          </p>
+          <p className="font-mono text-xs uppercase tracking-widest text-subtle">
+            {'// NETFLIX DEVELOPER SERIES • SEASON 2026'}
+          </p>
         </div>
 
-        {/* Middle Section: Socials & External Profiles */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-xs font-mono text-white/60">
-          <div className="flex items-center gap-6">
-            <a 
-              href="https://www.linkedin.com/in/bommu-preethika-9b098a268/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-red-500 transition-colors uppercase tracking-wider"
-            >
-              LinkedIn //
-            </a>
-            <a 
-              href="https://github.com/preethikabommu" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-red-500 transition-colors uppercase tracking-wider"
-            >
-              GitHub //
-            </a>
-          </div>
-
-          <div className="text-white/40 tracking-widest uppercase">
-            BENGALURU, IN
-          </div>
-        </div>
-
-        {/* Contact Details */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs font-mono text-white/60">
-          <a href="mailto:satyapreethika@gmail.com" className="hover:text-red-500 transition-colors uppercase tracking-wider">
-            satyapreethika@gmail.com
-          </a>
-          <span className="tracking-widest uppercase">+91 94903 10177</span>
-        </div>
-
-        {/* Bottom Copyright & Cinematic Tagline */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t border-white/5 text-[11px] font-mono text-white/40 uppercase tracking-widest">
-          <p>&copy; {new Date().getFullYear()} Preethika Bommu. All Rights Reserved.</p>
-          <p className="text-red-500/80">STREAMING WORLDWIDE &bull; BUILT WITH REACT & GSAP</p>
-        </div>
-
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap gap-x-7 gap-y-3 font-mono text-xs uppercase tracking-widest text-muted">
+            {NAV_LINKS.map(({ id, label }) => (
+              <li key={id}>
+                <a href={`#${id}`} className={linkClass}>
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-    </footer>
-  );
-};
+
+      <div className="flex flex-col justify-between gap-6 font-mono text-xs text-muted md:flex-row md:items-center">
+        <ul className="flex items-center gap-6">
+          {social.map(({ label, href }) => (
+            <li key={label}>
+              <a href={href} target="_blank" rel="noopener noreferrer" className={`${linkClass} uppercase tracking-wider`}>
+                {label} //<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p className="uppercase tracking-widest text-subtle">Bengaluru, IN</p>
+      </div>
+
+      <div className="flex flex-col justify-between gap-4 font-mono text-xs text-muted md:flex-row md:items-center">
+        <a href={email.href} className={`${linkClass} uppercase tracking-wider`}>
+          {email.value}
+        </a>
+        <a href={phone.href} className={`${linkClass} uppercase tracking-widest`}>
+          {phone.value}
+        </a>
+      </div>
+
+      <div className="flex flex-col items-center justify-between gap-3 border-t border-line pt-6 font-mono text-[11px] uppercase tracking-widest text-subtle md:flex-row">
+        <p>&copy; {new Date().getFullYear()} Preethika Bommu. All Rights Reserved.</p>
+        <p className="text-accent">STREAMING WORLDWIDE &bull; BUILT WITH REACT &amp; FRAMER MOTION</p>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;
